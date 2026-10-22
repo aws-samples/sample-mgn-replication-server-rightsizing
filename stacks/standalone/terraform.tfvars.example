@@ -1,0 +1,29 @@
+aws_region            = "us-east-1"
+deployment_account_id = "111122223333"
+name_prefix           = "mgn-replication-autoscaler"
+target_account_id     = "111122223333"
+automation_role_name  = "MGNReplicationAutoScalerRole"
+
+# Optional customer managed KMS key for the Lambda log group. Its key policy
+# must allow the logs.<region>.amazonaws.com service principal.
+# log_kms_key_arn = "arn:aws:kms:us-east-1:111122223333:key/<KEY_ID>"
+
+# Omit size_tiers to use the built-in ladder (thresholds are GiB):
+# 3,072 -> m5.xlarge; 6,144 -> m5.2xlarge; 10,240 -> m5.4xlarge;
+# 14,336 -> m5.8xlarge; 20,480 -> m5.12xlarge.
+# size_tiers = [
+#   { min_gib = 3072, instance_type = "m5.xlarge" },
+#   { min_gib = 6144, instance_type = "m5.2xlarge" },
+# ]
+
+# Start with a scheduled dry-run. Review results and CloudWatch Logs before
+# setting auto_update=true. Disable the schedule after the migration wave.
+enable_schedule     = false # enable only after target-role trust is configured
+auto_update         = false
+schedule_expression = "rate(6 hours)"
+log_retention_days  = 365
+
+tags = {
+  Environment = "migration"
+  Owner       = "migration-team"
+}

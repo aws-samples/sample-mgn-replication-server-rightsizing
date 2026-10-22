@@ -1,0 +1,73 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "MGNInventory",
+      "Effect": "Allow",
+      "Action": "mgn:DescribeSourceServers",
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "<REGION>"
+        }
+      }
+    },
+    {
+      "Sid": "MGNReadReplication",
+      "Effect": "Allow",
+      "Action": "mgn:GetReplicationConfiguration",
+      "Resource": "arn:aws:mgn:<REGION>:<ACCOUNT_ID>:source-server/*"
+    },
+    {
+      "Sid": "MGNUpdateReplication",
+      "Effect": "Allow",
+      "Action": "mgn:UpdateReplicationConfiguration",
+      "Resource": "arn:aws:mgn:<REGION>:<ACCOUNT_ID>:source-server/*"
+    },
+    {
+      "Sid": "EC2DescribeForMGNUpdate",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:DescribeInstances",
+        "ec2:DescribeInstanceTypes",
+        "ec2:DescribeLaunchTemplates",
+        "ec2:DescribeLaunchTemplateVersions",
+        "ec2:DescribeSecurityGroups",
+        "ec2:DescribeSubnets",
+        "ec2:DescribeVolumes"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "<REGION>"
+        }
+      }
+    },
+    {
+      "Sid": "CreateMGNLaunchTemplate",
+      "Effect": "Allow",
+      "Action": "ec2:CreateLaunchTemplate",
+      "Resource": "arn:aws:ec2:<REGION>:<ACCOUNT_ID>:launch-template/*",
+      "Condition": {
+        "Null": {
+          "aws:RequestTag/AWSApplicationMigrationServiceManaged": "false"
+        }
+      }
+    },
+    {
+      "Sid": "ModifyMGNLaunchTemplates",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:CreateLaunchTemplateVersion",
+        "ec2:ModifyLaunchTemplate",
+        "ec2:DeleteLaunchTemplateVersions"
+      ],
+      "Resource": "arn:aws:ec2:<REGION>:<ACCOUNT_ID>:launch-template/*",
+      "Condition": {
+        "Null": {
+          "aws:ResourceTag/AWSApplicationMigrationServiceManaged": "false"
+        }
+      }
+    }
+  ]
+}

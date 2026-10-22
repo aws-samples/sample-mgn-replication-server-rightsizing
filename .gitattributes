@@ -1,0 +1,12 @@
+**/*.tfstate export-ignore
+**/*.tfstate.* export-ignore
+**/*.tfvars export-ignore
+**/*.tfvars.json export-ignore
+**/.terraform/** export-ignore
+**/.terraform.lock.hcl export-ignore
+**/*.tfplan export-ignore
+**/*.zip export-ignore
+**/*_Product_Review_*.docx export-ignore
+**/TFC_BLOG_PROPOSAL.md export-ignore
+**/CHANGE_SUMMARY.md export-ignore
+.DS_Store export-ignore

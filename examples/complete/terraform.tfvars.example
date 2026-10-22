@@ -1,0 +1,33 @@
+aws_region            = "us-east-1"
+deployment_account_id = "111122223333"
+target_account_id     = "444455556666" # use the same ID for a single-account deployment
+
+# Credentials. Choose one approach per account, or leave all unset to use the
+# default credential chain (single-account deployments).
+# deployment_profile     = "automation-admin"
+# target_profile         = "migration-admin"
+# target_assume_role_arn = "arn:aws:iam::444455556666:role/TerraformDeploymentRole"
+
+name_prefix          = "mgn-replication-autoscaler"
+automation_role_name = "MGNReplicationAutoScalerRole"
+
+# Omit size_tiers to use the built-in ladder (thresholds are GiB).
+# size_tiers = [
+#   { min_gib = 3072, instance_type = "m5.xlarge" },
+#   { min_gib = 6144, instance_type = "m5.2xlarge" },
+# ]
+
+# Scheduled runs report only. Set auto_update = true after reviewing a dry-run.
+enable_schedule     = true
+auto_update         = false
+schedule_expression = "rate(6 hours)"
+log_retention_days  = 365
+
+# Optional customer managed KMS key for the Lambda log group. Its key policy
+# must allow the logs.<region>.amazonaws.com service principal.
+# log_kms_key_arn = "arn:aws:kms:us-east-1:111122223333:key/<KEY_ID>"
+
+tags = {
+  Environment = "migration"
+  Owner       = "migration-team"
+}

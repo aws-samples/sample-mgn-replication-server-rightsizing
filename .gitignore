@@ -1,0 +1,46 @@
+# Terraform working files, plans, overrides, and local state
+**/.terraform/*
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+!*.tfvars.example
+*.tfplan
+*.plan
+.terraform.tfstate.lock.info
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+crash.log
+crash.*.log
+
+# Generated Lambda deployment archives and local command output
+*.zip
+*.log
+response.json
+response-*.json
+
+# Internal review artifacts
+*_Product_Review_*.docx
+TFC_BLOG_PROPOSAL.md
+CHANGE_SUMMARY.md
+
+# Credentials and local environment files
+.env
+.env.*
+*.pem
+*.key
+.aws/
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Operating-system and editor metadata
+.DS_Store
+.idea/
+.vscode/

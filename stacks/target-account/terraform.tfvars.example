@@ -1,0 +1,14 @@
+aws_region           = "us-east-1"
+target_account_id    = "111122223333"
+automation_role_name = "MGNReplicationAutoScalerRole"
+
+# Obtain this after applying stacks/standalone:
+#   terraform output -raw lambda_role_arn
+# Commercial-partition example. Use the partition shown by the automation
+# stack output in GovCloud or China partitions.
+lambda_role_arn = "arn:aws:iam::111122223333:role/mgn-replication-autoscaler-role"
+
+tags = {
+  Environment = "migration"
+  Owner       = "migration-team"
+}
