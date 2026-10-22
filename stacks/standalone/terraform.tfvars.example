@@ -8,6 +8,8 @@ automation_role_name  = "MGNReplicationAutoScalerRole"
 # must allow the logs.<region>.amazonaws.com service principal.
 # log_kms_key_arn = "arn:aws:kms:us-east-1:111122223333:key/<KEY_ID>"
 
+# Each min_gib is inclusive and remains active until the next min_gib; do
+# not add upper bounds. Exact instance types are required (no wildcards).
 # Omit size_tiers to use the built-in ladder (thresholds are GiB):
 # 3,072 -> m5.xlarge; 6,144 -> m5.2xlarge; 10,240 -> m5.4xlarge;
 # 14,336 -> m5.8xlarge; 20,480 -> m5.12xlarge.
@@ -15,6 +17,10 @@ automation_role_name  = "MGNReplicationAutoScalerRole"
 #   { min_gib = 3072, instance_type = "m5.xlarge" },
 #   { min_gib = 6144, instance_type = "m5.2xlarge" },
 # ]
+
+# Exact current types that may be promoted into the configured tiers. If your
+# account uses m6i/m7i, set this together with a matching exact size_tiers list.
+# baseline_instance_types = ["m6i.large", "m7i.large"]
 
 # Start with a scheduled dry-run. Review results and CloudWatch Logs before
 # setting auto_update=true. Disable the schedule after the migration wave.

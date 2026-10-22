@@ -127,22 +127,24 @@ Review every server's `source_capacity_gib`, `inventory_complete`, `target_insta
 
 After reviewing the dry-run, either invoke [`events/apply.json`](events/apply.json) once or set `auto_update=true` in the selected stack and reapply Terraform.
 
-Changing a replication server type restarts that replication server and can cause a brief resynchronization. Run this early in a migration wave, not near cutover. Restrict `lambda:InvokeFunction` for this function to approved operators and automation because any authorized invoker can request apply mode.
+Changing a replication server type causes AWS Transform MGN to replace or restart that replication server. Replication resumes automatically, but the change can re-drive data transfer. Run this early in a migration wave, allow enough time for replication to return to a healthy state, and do not schedule it near cutover. Restrict `lambda:InvokeFunction` for this function to approved operators and automation because any authorized invoker can request apply mode.
 
 ## Default tiers
 
-Thresholds use GiB; 1,024 GiB equals 1 TiB.
+Thresholds use GiB; 1,024 GiB equals 1 TiB. Each `min_gib` value is an inclusive lower bound. Its tier applies until the next tier's lower bound, so no upper-bound field is required.
 
 | Source-disk capacity | Target replication instance |
 |---|---|
 | Below 3 TiB | No change |
-| 3-6 TiB | `m5.xlarge` |
-| 6-10 TiB | `m5.2xlarge` |
-| 10-14 TiB | `m5.4xlarge` |
-| 14-20 TiB | `m5.8xlarge` |
+| 3 TiB ≤ capacity < 6 TiB | `m5.xlarge` |
+| 6 TiB ≤ capacity < 10 TiB | `m5.2xlarge` |
+| 10 TiB ≤ capacity < 14 TiB | `m5.4xlarge` |
+| 14 TiB ≤ capacity < 20 TiB | `m5.8xlarge` |
 | 20 TiB or more | `m5.12xlarge` |
 
-The function permits baseline-to-tier and lower-tier-to-higher-tier transitions only when the target size suffix is larger. It does not downgrade. Current types outside the configured baseline and tier sets are left unchanged.
+The built-in ladder uses exact `m5` types because AWS Transform MGN configuration accepts a specific EC2 instance type, not a family wildcard. AWS documents `t3.small` as the service default and `m5.large`, `m5.xlarge`, or larger as common scale-up choices. Treat this ladder as a sample and verify its throughput, availability, quota, architecture, and cost characteristics for your Region.
+
+The function permits configured baseline-to-tier and lower-tier-to-higher-tier transitions only when the target size suffix is larger. It does not downgrade. Current types outside the configured baseline and tier sets are left unchanged. If your migration account starts with exact `m6i` or `m7i` types, configure `baseline_instance_types` and a matching exact `size_tiers` ladder together; do not use values such as `m5.*`.
 
 ## Operational considerations
 

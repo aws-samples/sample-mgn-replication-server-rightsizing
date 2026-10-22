@@ -1,4 +1,4 @@
 {
-  "action": "list_disks",
+  "action": "evaluate_replication_servers",
   "auto_update": true
 }

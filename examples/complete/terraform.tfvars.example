@@ -11,11 +11,17 @@ target_account_id     = "444455556666" # use the same ID for a single-account de
 name_prefix          = "mgn-replication-autoscaler"
 automation_role_name = "MGNReplicationAutoScalerRole"
 
+# Each min_gib is inclusive and remains active until the next min_gib; do
+# not add upper bounds. Exact instance types are required (no wildcards).
 # Omit size_tiers to use the built-in ladder (thresholds are GiB).
 # size_tiers = [
 #   { min_gib = 3072, instance_type = "m5.xlarge" },
 #   { min_gib = 6144, instance_type = "m5.2xlarge" },
 # ]
+
+# Exact current types that may be promoted into the configured tiers. If your
+# account uses m6i/m7i, set this together with a matching exact size_tiers list.
+# baseline_instance_types = ["m6i.large", "m7i.large"]
 
 # Scheduled runs report only. Set auto_update = true after reviewing a dry-run.
 enable_schedule     = true

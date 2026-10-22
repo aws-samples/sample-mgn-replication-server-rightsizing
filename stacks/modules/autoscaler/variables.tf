@@ -50,11 +50,26 @@ variable "size_tiers" {
 
   validation {
     condition = (
-      alltrue([for tier in var.size_tiers : tier.min_gib > 0 && trimspace(tier.instance_type) != ""]) &&
+      alltrue([for tier in var.size_tiers : tier.min_gib > 0 && can(regex("^[a-z0-9][a-z0-9-]*\\.[a-z0-9]+$", lower(tier.instance_type)))]) &&
       length(distinct([for tier in var.size_tiers : tier.min_gib])) == length(var.size_tiers) &&
       length(distinct([for tier in var.size_tiers : lower(tier.instance_type)])) == length(var.size_tiers)
     )
-    error_message = "Each tier must have a positive unique min_gib and a non-empty unique instance_type."
+    error_message = "Each tier must have a positive unique min_gib and a unique exact EC2 instance type; wildcards are not supported."
+  }
+}
+
+variable "baseline_instance_types" {
+  description = "Exact current instance types that may be promoted into a configured tier."
+  type        = list(string)
+  default     = ["t3.small", "t3.medium", "t3.large"]
+
+  validation {
+    condition = (
+      length(var.baseline_instance_types) > 0 &&
+      alltrue([for instance_type in var.baseline_instance_types : can(regex("^[a-z0-9][a-z0-9-]*\\.[a-z0-9]+$", lower(instance_type)))]) &&
+      length(distinct([for instance_type in var.baseline_instance_types : lower(instance_type)])) == length(var.baseline_instance_types)
+    )
+    error_message = "baseline_instance_types must contain unique exact EC2 instance types; wildcards are not supported."
   }
 }
 

@@ -68,7 +68,7 @@ resource "aws_cloudwatch_event_target" "lambda" {
   input = jsonencode({
     target_account_id = var.target_account_id
     aws_region        = var.target_aws_region
-    action            = "list_disks"
+    action            = "evaluate_replication_servers"
     auto_update       = var.auto_update
   })
 

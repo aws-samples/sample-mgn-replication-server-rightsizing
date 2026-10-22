@@ -24,11 +24,6 @@ crash.*.log
 response.json
 response-*.json
 
-# Internal review artifacts
-*_Product_Review_*.docx
-TFC_BLOG_PROPOSAL.md
-CHANGE_SUMMARY.md
-
 # Credentials and local environment files
 .env
 .env.*

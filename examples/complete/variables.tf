@@ -83,6 +83,12 @@ variable "size_tiers" {
   default = []
 }
 
+variable "baseline_instance_types" {
+  description = "Exact current instance types that may be promoted into a configured tier."
+  type        = list(string)
+  default     = ["t3.small", "t3.medium", "t3.large"]
+}
+
 variable "enable_schedule" {
   description = "Create an EventBridge schedule, retry policy, and SQS dead-letter queue."
   type        = bool

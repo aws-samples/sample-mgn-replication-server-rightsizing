@@ -18,13 +18,15 @@ It does **not** use filesystem utilization or replication-progress bytes. It doe
 | Source capacity | Target |
 |---|---|
 | Below 3,072 GiB (3 TiB) | No change |
-| 3,072-6,143 GiB | `m5.xlarge` |
-| 6,144-10,239 GiB | `m5.2xlarge` |
-| 10,240-14,335 GiB | `m5.4xlarge` |
-| 14,336-20,479 GiB | `m5.8xlarge` |
+| 3,072 GiB ≤ capacity < 6,144 GiB | `m5.xlarge` |
+| 6,144 GiB ≤ capacity < 10,240 GiB | `m5.2xlarge` |
+| 10,240 GiB ≤ capacity < 14,336 GiB | `m5.4xlarge` |
+| 14,336 GiB ≤ capacity < 20,480 GiB | `m5.8xlarge` |
 | 20,480 GiB or more | `m5.12xlarge` |
 
-These are sample operational defaults, not an AWS Transform MGN service recommendation. Verify EBS/network throughput, instance availability, quotas, and price for each AWS Region.
+`min_gib` is an inclusive lower bound. Each tier applies until the next tier's `min_gib`, so the configuration intentionally has no upper-bound field. For example, `min_gib = 3072` selects `m5.xlarge` until the 6,144 GiB tier begins.
+
+AWS Transform MGN configuration uses exact EC2 instance types rather than family wildcards. AWS documents `t3.small` as the service default and `m5.large`, `m5.xlarge`, or larger as common scale-up choices, which is why this sample's built-in ladder uses `m5`. These are sample operational defaults, not a universal service recommendation. Verify EBS/network throughput, x86_64 compatibility, instance availability, quotas, and price for each AWS Region. For accounts using exact `m6i` or `m7i` starting types, configure `baseline_instance_types` and a matching exact `size_tiers` ladder together.
 
 ## Common prerequisites
 
@@ -89,7 +91,8 @@ The deployment roots pass these values to `stacks/modules/autoscaler`.
 | `target_account_id` | Yes | — | Fixed target account |
 | `target_aws_region` | Yes | — | Fixed AWS Transform MGN Region |
 | `automation_role_arn` | Yes | — | Exact assumed-role ARN |
-| `size_tiers` | No | Built-in ladder | List of `{min_gib, instance_type}` |
+| `size_tiers` | No | Built-in ladder | List of `{min_gib, instance_type}` using exact instance types |
+| `baseline_instance_types` | No | `t3.small`, `t3.medium`, `t3.large` | Exact current types eligible for promotion into a tier |
 | `log_retention_days` | No | `365` | CloudWatch Logs retention |
 | `log_kms_key_arn` | No | `""` | Optional customer managed KMS key for the log group |
 | `tags` | No | `{}` | Resource tags |
@@ -140,7 +143,8 @@ The module exports `automation_role_arn` and inherits the caller's AWS provider 
 | `target_account_id` | Yes | — | AWS Transform MGN target account |
 | `automation_role_name` | No | `MGNReplicationAutoScalerRole` | Target role name |
 | `name_prefix` | No | `mgn-replication-autoscaler` | Resource name prefix |
-| `size_tiers` | No | Built-in ladder | Capacity tiers |
+| `size_tiers` | No | Built-in ladder | Capacity tiers using exact instance types |
+| `baseline_instance_types` | No | `t3.small`, `t3.medium`, `t3.large` | Exact current types eligible for promotion into a tier |
 | `enable_schedule` | No | `false` | Create schedule, retries, and DLQ |
 | `schedule_expression` | No | `rate(6 hours)` | Schedule cadence |
 | `auto_update` | No | `false` | Apply updates or report only |
@@ -179,7 +183,7 @@ Direct invocation or EventBridge `detail` accepts:
 
 | Field | Type | Default | Notes |
 |---|---|---|---|
-| `action` | string | `list_disks` | `list_disks` or `list_servers` |
+| `action` | string | `evaluate_replication_servers` | `evaluate_replication_servers` or `list_servers`; deprecated `list_disks` remains an alias |
 | `auto_update` | JSON boolean | `false` | Strings such as `"false"` are rejected |
 | `target_account_id` | string | deployment value | Optional; if supplied, must match deployment |
 | `aws_region` | string | deployment value | Optional; if supplied, must match deployment |
@@ -221,7 +225,7 @@ The function raises when any server fails. EventBridge retries failures deliveri
 ## Security and operational guidance
 
 - One invocation evaluates every non-archived source server in the configured account and Region. Use a dedicated migration account/Region or add deployment-specific scoping before production use.
-- Apply early in a wave. A type change restarts the replication server and can briefly resynchronize.
+- Apply early in a wave. A type change replaces or restarts the replication server; replication resumes automatically but can re-drive data transfer. Allow enough time for replication to return to a healthy state before cutover.
 - One invocation processes servers serially, and reserved concurrency prevents overlapping executions. Partition or implement fan-out for very large fleets.
 - The function can promote a server from a lower configured tier to a higher tier when source capacity grows.
 - It compares baseline and target size suffixes before updating, does not downgrade, and skips unknown/operator-selected types outside managed sets.

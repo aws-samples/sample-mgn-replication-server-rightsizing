@@ -132,6 +132,7 @@ resource "aws_lambda_function" "autoscaler" {
       TARGET_AWS_REGION        = var.target_aws_region
       AUTOMATION_ROLE_ARN      = var.automation_role_arn
       ASSUME_ROLE_SESSION_NAME = local.assume_role_session_name
+      BASELINE_INSTANCE_TYPES  = join(",", var.baseline_instance_types)
       SIZE_TIERS               = length(var.size_tiers) > 0 ? jsonencode([for tier in var.size_tiers : [tier.min_gib, tier.instance_type]]) : ""
     }
   }

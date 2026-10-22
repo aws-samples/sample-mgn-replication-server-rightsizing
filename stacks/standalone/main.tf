@@ -35,6 +35,7 @@ module "autoscaler" {
   target_aws_region        = var.aws_region
   automation_role_arn      = local.automation_role_arn
   size_tiers               = var.size_tiers
+  baseline_instance_types  = var.baseline_instance_types
   log_retention_days       = var.log_retention_days
   log_kms_key_arn          = var.log_kms_key_arn
   enable_dead_letter_queue = var.enable_schedule

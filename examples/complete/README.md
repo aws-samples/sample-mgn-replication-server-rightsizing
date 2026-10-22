@@ -66,7 +66,7 @@ For each server, review `source_capacity_gib`, `inventory_complete`, `target_ins
 
 ## Enable updates
 
-Changing a replication server instance type restarts that replication server and can cause a brief resynchronization. Apply changes early in a migration wave, not near cutover.
+Changing a replication server instance type causes AWS Transform MGN to replace or restart that replication server. Replication resumes automatically, but the change can re-drive data transfer. Apply changes early in a migration wave, allow enough time for replication to return to a healthy state, and do not schedule them near cutover.
 
 To apply the reviewed changes once:
 
@@ -108,7 +108,8 @@ terraform -chdir=examples/complete destroy
 | `target_assume_role_arn` | No | `""` | Role that Terraform assumes in the target account |
 | `name_prefix` | No | `mgn-replication-autoscaler` | Lambda name and resource prefix (1-59 characters) |
 | `automation_role_name` | No | `MGNReplicationAutoScalerRole` | Target-account role name |
-| `size_tiers` | No | Built-in ladder | List of `{ min_gib, instance_type }` |
+| `size_tiers` | No | Built-in ladder | List of `{ min_gib, instance_type }` using exact instance types |
+| `baseline_instance_types` | No | `t3.small`, `t3.medium`, `t3.large` | Exact current types eligible for promotion into a tier |
 | `enable_schedule` | No | `true` | Create the EventBridge schedule and dead-letter queue |
 | `schedule_expression` | No | `rate(6 hours)` | Schedule cadence |
 | `auto_update` | No | `false` | Scheduled runs apply updates (`true`) or report only (`false`) |

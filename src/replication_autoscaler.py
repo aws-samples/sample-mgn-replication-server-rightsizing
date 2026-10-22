@@ -314,8 +314,10 @@ def _source_disk_inventory(
     return disks, total_gib, inventory_complete
 
 
-def list_disk_settings(*, auto_update: bool = False) -> List[Dict[str, Any]]:
-    """Evaluate all non-archived AWS Transform MGN source servers in the configured target."""
+def evaluate_replication_servers(
+    *, auto_update: bool = False
+) -> List[Dict[str, Any]]:
+    """Evaluate and optionally update all non-archived source servers."""
     session = _assume_role_session()
     client = session.client("mgn", config=BOTO_RETRY_CONFIG)
     paginator = client.get_paginator("describe_source_servers")
@@ -410,15 +412,26 @@ def list_disk_settings(*, auto_update: bool = False) -> List[Dict[str, Any]]:
     return results
 
 
+EVALUATE_ACTION = "evaluate_replication_servers"
+LEGACY_ACTION_ALIASES = {"list_disks": EVALUATE_ACTION}
+
+
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     """Lambda entry point for direct or EventBridge invocation."""
     _validate_runtime_config()
     payload = _extract_event_payload(event)
     _validate_event_target(payload)
-    action = payload.get("action", "list_disks")
-    if not isinstance(action, str):
+    requested_action = payload.get("action", EVALUATE_ACTION)
+    if not isinstance(requested_action, str):
         raise ValueError("action must be a string")
-    action = action.strip().lower()
+    requested_action = requested_action.strip().lower()
+    action = LEGACY_ACTION_ALIASES.get(requested_action, requested_action)
+    if action != requested_action:
+        logger.warning(
+            "Action '%s' is deprecated; use '%s' instead",
+            requested_action,
+            action,
+        )
     auto_update = _parse_bool(payload, "auto_update", False)
 
     logger.info(
@@ -432,10 +445,12 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
 
     if action == "list_servers":
         results: Sequence[Dict[str, Any]] = list_source_servers()
-    elif action == "list_disks":
-        results = list_disk_settings(auto_update=auto_update)
+    elif action == EVALUATE_ACTION:
+        results = evaluate_replication_servers(auto_update=auto_update)
     else:
-        raise ValueError("action must be 'list_disks' or 'list_servers'")
+        raise ValueError(
+            "action must be 'evaluate_replication_servers' or 'list_servers'"
+        )
 
     return {
         "status": "SUCCESS",
